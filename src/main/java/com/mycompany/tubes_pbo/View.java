@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.tubes_pbo;
 
-/**
- *
- * @author User
- */
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,47 +8,74 @@ public class View extends JFrame {
 
     public View() {
         setTitle("Menu Utama");
-        setSize(400, 300);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel utama
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        // Panel utama dengan layout BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(0xEAF6F6));
 
-        // Header
+        // Header dengan desain yang lebih menarik
         JLabel header = new JLabel("Welcome to HospitalFivee", SwingConstants.CENTER);
-        header.setFont(new Font("Arial", Font.BOLD, 18));
-        panel.add(header, BorderLayout.NORTH);
+        header.setFont(new Font("Serif", Font.BOLD, 28));
+        header.setForeground(new Color(0x004B6B));
+        header.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        mainPanel.add(header, BorderLayout.NORTH);
 
-        // Panel tombol
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        // Panel untuk tombol dengan GridBagLayout agar lebih terorganisir
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setBackground(new Color(0xEAF6F6));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
         // Tombol menuju ManDokter
-        JButton btnManDokter = new JButton("Manajemen Dokter");
-        btnManDokter.setPreferredSize(new Dimension(150, 30));
+        JButton btnManDokter = createStyledButton("Manajemen Dokter");
         btnManDokter.addActionListener(this::goToManDokter);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        buttonPanel.add(btnManDokter, gbc);
 
         // Tombol menuju JadwalPraktikCRUD
-        JButton btnJadwalPraktik = new JButton("Manajemen Jadwal Praktik");
-        btnJadwalPraktik.setPreferredSize(new Dimension(150, 30));
+        JButton btnJadwalPraktik = createStyledButton("Manajemen Jadwal Praktik");
         btnJadwalPraktik.addActionListener(this::goToJadwalPraktik);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        buttonPanel.add(btnJadwalPraktik, gbc);
 
         // Tombol menuju ManPoli
-        JButton btnManPoli = new JButton("Manajemen Poli");
-        btnManPoli.setPreferredSize(new Dimension(150, 30));
+        JButton btnManPoli = createStyledButton("Manajemen Poli");
         btnManPoli.addActionListener(this::goToManPoli);
-
-        // Menambahkan tombol ke panel tombol
-        buttonPanel.add(btnManDokter);
-        buttonPanel.add(btnJadwalPraktik);
-        buttonPanel.add(btnManPoli);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        buttonPanel.add(btnManPoli, gbc);
 
         // Menambahkan panel tombol ke panel utama
-        panel.add(buttonPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        // Footer dengan informasi tambahan
+        JLabel footer = new JLabel("\u00A9 2024 HospitalFivee - All Rights Reserved", SwingConstants.CENTER);
+        footer.setFont(new Font("Arial", Font.ITALIC, 12));
+        footer.setForeground(Color.GRAY);
+        footer.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+        mainPanel.add(footer, BorderLayout.SOUTH);
 
         // Menambahkan panel utama ke frame
-        add(panel);
+        add(mainPanel);
+    }
+
+    // Metode untuk membuat tombol dengan gaya yang seragam
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(200, 40));
+        button.setFont(new Font("SansSerif", Font.BOLD, 14));
+        button.setBackground(new Color(0x70B9BE));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0x004B6B), 2),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        return button;
     }
 
     private void goToManDokter(ActionEvent e) {
@@ -80,4 +99,3 @@ public class View extends JFrame {
         });
     }
 }
-

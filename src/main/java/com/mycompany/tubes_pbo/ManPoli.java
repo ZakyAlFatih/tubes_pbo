@@ -129,6 +129,11 @@ public class ManPoli extends JFrame {
         namaPoliField.setText("");
     }
 
+    private void backToMainMenu() {
+        this.dispose(); // Close the current JadwalPraktikCRUD window
+        new View().setVisible(true); // Open the main menu or previous screen (replace 'View' with the actual class for your main menu)
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             ManPoli app = new ManPoli();
