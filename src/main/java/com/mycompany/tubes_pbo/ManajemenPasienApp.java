@@ -1,36 +1,36 @@
 package com.mycompany.tubes_pbo;
 
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class ManajemenPasienApp extends JFrame {
     private Connection connection;
+    private JPanel cardPanel;
+    private CardLayout cardLayout;
 
     public ManajemenPasienApp() {
         setTitle("Manajemen Pasien");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);  // Ukuran yang lebih pas untuk fullscreen
+        setSize(400, 300); // Ukuran lebih kecil
         setLocationRelativeTo(null);
-
-        // Koneksi ke Database
         connectToDatabase();
 
-        // Tampilkan halaman login sebagai default
-        showLoginPage();
+        // Menyiapkan CardLayout untuk navigasi antar halaman
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        add(cardPanel);
 
+        showDashboardPage();
     }
 
     private void connectToDatabase() {
         try {
-            // Driver MySQL JDBC
-            String url = "jdbc:mysql://localhost:3308/hos5"; // Ganti localhost dengan alamat server database Anda jika perlu
-            String username = "root"; // Ganti dengan username database Anda
-            String password = ""; // Ganti dengan password database Anda jika diperlukan
-
-            // Membuat koneksi
+            String url = "jdbc:mysql://localhost:3308/hos5";
+            String username = "root";
+            String password = "";
             connection = DriverManager.getConnection(url, username, password);
             System.out.println("Koneksi ke database berhasil!");
         } catch (SQLException e) {
@@ -39,27 +39,105 @@ public class ManajemenPasienApp extends JFrame {
         }
     }
 
-
-    private void showLoginPage() {
-        getContentPane().removeAll();
-        JPanel loginPanel = new JPanel(new BorderLayout(20, 20));
-        loginPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    private void showDashboardPage() {
+        JPanel dashboardPanel = createStyledPanel();
 
         // Judul
-        JLabel titleLabel = new JLabel("Login", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel titleLabel = createStyledTitle("Welcome to HospitalFivee");
+        dashboardPanel.add(titleLabel, BorderLayout.NORTH);
+
+        // Teks "Login as ..."
+        JLabel loginAsLabel = new JLabel("Login as ...", SwingConstants.CENTER);
+        loginAsLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        dashboardPanel.add(loginAsLabel, BorderLayout.CENTER);
+
+        // Tombol Pilihan
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+        buttonPanel.setBackground(Color.decode("#cfeef0"));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JButton btnAdmin = createStyledButton("Admin");
+        JButton btnPasient = createStyledButton("Pasient");
+
+        buttonPanel.add(btnAdmin);
+        buttonPanel.add(btnPasient);
+
+        dashboardPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Event Listener
+        btnAdmin.addActionListener(e -> showAdminLoginPage());
+        btnPasient.addActionListener(e -> showLoginPage());
+
+        cardPanel.add(dashboardPanel, "Dashboard");
+
+        cardLayout.show(cardPanel, "Dashboard");
+    }
+
+    private void showAdminLoginPage() {
+        JPanel adminLoginPanel = createStyledPanel();
+
+        // Judul
+        JLabel titleLabel = createStyledTitle("Admin Login");
+        adminLoginPanel.add(titleLabel, BorderLayout.NORTH);
+
+        // Form Login
+        JPanel formPanel = new JPanel(new GridLayout(3, 2, 15, 15));
+        formPanel.setBackground(Color.decode("#cfeef0"));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel lblUsername = new JLabel("Username:");
+        JTextField tfUsername = new JTextField();
+        JLabel lblPassword = new JLabel("Password:");
+        JPasswordField pfPassword = new JPasswordField();
+
+        JButton btnLogin = createStyledButton("Login");
+
+        formPanel.add(lblUsername);
+        formPanel.add(tfUsername);
+        formPanel.add(lblPassword);
+        formPanel.add(pfPassword);
+        formPanel.add(new JLabel()); // Placeholder
+        formPanel.add(btnLogin);
+
+        adminLoginPanel.add(formPanel, BorderLayout.CENTER);
+
+        // Add Back Button to the top-left corner
+        addBackButton(adminLoginPanel);
+
+        // Event Listener
+        btnLogin.addActionListener((ActionEvent e) -> {
+            String username = tfUsername.getText();
+            String password = new String(pfPassword.getPassword());
+
+            if ("admin".equals(username) && "admin1234".equals(password)) {
+                JOptionPane.showMessageDialog(this, "Admin successfully logged In!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Username or password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        cardPanel.add(adminLoginPanel, "AdminLogin");
+        cardLayout.show(cardPanel, "AdminLogin");
+    }
+
+    private void showLoginPage() {
+        JPanel loginPanel = createStyledPanel();
+
+        // Judul
+        JLabel titleLabel = createStyledTitle("Login");
         loginPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Form Login
         JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        formPanel.setBackground(Color.decode("#cfeef0"));
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel lblEmail = new JLabel("Email:");
-        JTextField tfEmail = new JTextField();
+        JTextField tfEmail = new JTextField(15);
         JLabel lblPassword = new JLabel("Password:");
-        JPasswordField pfPassword = new JPasswordField();
-        JButton btnLogin = new JButton("Login");
-        JButton btnGoToRegister = new JButton("Belum punya akun? Register");
+        JPasswordField pfPassword = new JPasswordField(15);
+        JButton btnLogin = createStyledButton("Login");
+        JButton btnGoToRegister = createStyledButton("Register");
 
         formPanel.add(lblEmail);
         formPanel.add(tfEmail);
@@ -70,45 +148,42 @@ public class ManajemenPasienApp extends JFrame {
 
         loginPanel.add(formPanel, BorderLayout.CENTER);
 
+        // Add Back Button to the top-left corner
+        addBackButton(loginPanel);
+
         // Event Listener
         btnLogin.addActionListener(e -> loginPatient(tfEmail.getText(), new String(pfPassword.getPassword())));
         btnGoToRegister.addActionListener(e -> showRegisterPage());
 
-        // Tambahkan panel login ke frame
-        add(loginPanel);
-        revalidate();
-        repaint();
+        cardPanel.add(loginPanel, "Login");
+        cardLayout.show(cardPanel, "Login");
     }
 
     private void showRegisterPage() {
-        getContentPane().removeAll();
-        JPanel registerPanel = new JPanel(new BorderLayout(20, 20));
-        registerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel registerPanel = createStyledPanel();
 
         // Judul
-        JLabel titleLabel = new JLabel("Register", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel titleLabel = createStyledTitle("Register");
         registerPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Form Register
-        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
+        formPanel.setBackground(Color.decode("#cfeef0"));
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel lblEmail = new JLabel("Email:");
-        JTextField tfEmail = new JTextField();
+        JTextField tfEmail = new JTextField(15);
         JLabel lblPassword = new JLabel("Password:");
-        JPasswordField pfPassword = new JPasswordField();
+        JPasswordField pfPassword = new JPasswordField(15);
         JLabel lblNama = new JLabel("Nama:");
-        JTextField tfNama = new JTextField();
+        JTextField tfNama = new JTextField(15);
         JLabel lblUsia = new JLabel("Usia:");
-        JTextField tfUsia = new JTextField();
-        JLabel lblJenisKelamin = new JLabel("Jenis Kelamin:");
-        JTextField tfJenisKelamin = new JTextField();
+        JTextField tfUsia = new JTextField(15);
         JLabel lblNoTelepon = new JLabel("No Telepon:");
-        JTextField tfNoTelepon = new JTextField();
+        JTextField tfNoTelepon = new JTextField(15);
 
-        JButton btnRegister = new JButton("Register");
-        JButton btnGoToLogin = new JButton("Sudah punya akun? Login");
+        JButton btnRegister = createStyledButton("Register");
+        JButton btnGoToLogin = createStyledButton("Login");
 
         formPanel.add(lblEmail);
         formPanel.add(tfEmail);
@@ -118,8 +193,6 @@ public class ManajemenPasienApp extends JFrame {
         formPanel.add(tfNama);
         formPanel.add(lblUsia);
         formPanel.add(tfUsia);
-        formPanel.add(lblJenisKelamin);
-        formPanel.add(tfJenisKelamin);
         formPanel.add(lblNoTelepon);
         formPanel.add(tfNoTelepon);
         formPanel.add(btnRegister);
@@ -127,45 +200,56 @@ public class ManajemenPasienApp extends JFrame {
 
         registerPanel.add(formPanel, BorderLayout.CENTER);
 
+        // Add Back Button to the top-left corner
+        addBackButton(registerPanel);
+
         // Event Listener
         btnRegister.addActionListener(e -> registerPatient(tfEmail.getText(), new String(pfPassword.getPassword()), tfNama.getText(),
-                tfUsia.getText(), tfJenisKelamin.getText(), tfNoTelepon.getText()));
+                tfUsia.getText(), tfNoTelepon.getText()));
         btnGoToLogin.addActionListener(e -> showLoginPage());
 
-        // Tambahkan panel register ke frame
-        add(registerPanel);
-        revalidate();
-        repaint();
+        cardPanel.add(registerPanel, "Register");
+        cardLayout.show(cardPanel, "Register");
     }
 
-    private void registerPatient(String email, String password, String nama, String usia, String jenisKelamin, String noTelepon) {
-        if (email.isEmpty() || password.isEmpty() || nama.isEmpty() || usia.isEmpty() || jenisKelamin.isEmpty() || noTelepon.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Semua field harus diisi!", "Peringatan", JOptionPane.WARNING_MESSAGE);
+    private void addBackButton(JPanel panel) {
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(Color.decode("#cfeef0"));
+
+        JButton btnBack = createStyledButton("Back");
+        btnBack.setPreferredSize(new Dimension(100, 40)); // Ukuran sama dengan tombol lainnya
+        btnBack.addActionListener(e -> cardLayout.show(cardPanel, "Dashboard"));
+
+        topPanel.add(btnBack, BorderLayout.WEST); // Posisi di kiri atas
+        panel.add(topPanel, BorderLayout.NORTH);
+    }
+
+    private void registerPatient(String email, String password, String nama, String usia, String noTelepon) {
+        if (email.isEmpty() || password.isEmpty() || nama.isEmpty() || usia.isEmpty() || noTelepon.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "All fields must be filled!", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            String sql = "INSERT INTO pasien (email, password, nama, usia, jenis_kelamin, no_telepon) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO pasien (email, password, nama, usia, no_telepon) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, email);
             statement.setString(2, password);
             statement.setString(3, nama);
             statement.setInt(4, Integer.parseInt(usia));
-            statement.setString(5, jenisKelamin);
-            statement.setString(6, noTelepon);
+            statement.setString(5, noTelepon);
 
             statement.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Pendaftaran berhasil!");
+            JOptionPane.showMessageDialog(this, "Successfully registered!");
             showLoginPage();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal mendaftarkan pasien: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to register: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // modif by jak
     private void loginPatient(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Email dan password harus diisi!", "Peringatan", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Email and password must be filled!", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -177,21 +261,43 @@ public class ManajemenPasienApp extends JFrame {
 
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                JOptionPane.showMessageDialog(this, "Login berhasil! Selamat datang, " + resultSet.getString("nama"));
-
-                // Setelah login berhasil, buka View dan tutup ManajemenPasienApp
+                JOptionPane.showMessageDialog(this, "Login Success! Welcome, " + resultSet.getString("nama"));
+                // Setelah login berhasil, buka View dan tutup ManajemenPasienApp mod by jak
                 this.dispose(); // Menutup ManajemenPasienApp
                 new View().setVisible(true); // Membuka tampilan View
+
             } else {
-                JOptionPane.showMessageDialog(this, "Email atau password salah!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Email or password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal melakukan login: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to login: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private JPanel createStyledPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(Color.decode("#cfeef0"));
+        return panel;
+    }
 
+    private JLabel createStyledTitle(String text) {
+        JLabel label = new JLabel(text, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+        return label;
+    }
 
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setBackground(Color.decode("#6fb9bd"));
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.PLAIN, 14));
+        return button;
+    }
 
-
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ManajemenPasienApp app = new ManajemenPasienApp();
+            app.setVisible(true);
+        });
+    }
 }
