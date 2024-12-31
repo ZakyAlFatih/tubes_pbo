@@ -1,11 +1,11 @@
 package com.mycompany.tubes_pbo;
 
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 public class ManPoli extends JFrame {
     private JTextField idPoliField;
@@ -13,27 +13,33 @@ public class ManPoli extends JFrame {
     private JTextField namaPoliField;
     private DefaultTableModel tableModel;
     private JTable dokterTable;
+    private Connection connection;
 
     public ManPoli() {
+        connectToDatabase();
+
         setTitle("Manajemen Poli");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        Color bgColor = new Color(0xCFEEF0);
+
         // Form Panel
         JPanel formPanel = new JPanel(new GridLayout(3, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Data Poli"));
+        formPanel.setBackground(bgColor);
 
-        JLabel idPoliLabel = new JLabel("ID Poli:");
+        JLabel idDokterLabel = new JLabel("ID Poli:");
         idPoliField = new JTextField();
 
         JLabel namaDokterLabel = new JLabel("Nama Dokter:");
         namaDokterField = new JTextField();
 
-        JLabel spesialisLabel = new JLabel("Nama Poli");
+        JLabel spesialisLabel = new JLabel("Nama Poli:");
         namaPoliField = new JTextField();
 
-        formPanel.add(idPoliLabel);
+        formPanel.add(idDokterLabel);
         formPanel.add(idPoliField);
         formPanel.add(namaDokterLabel);
         formPanel.add(namaDokterField);
@@ -43,31 +49,47 @@ public class ManPoli extends JFrame {
         add(formPanel, BorderLayout.NORTH);
 
         // Table Panel
-        String[] columnNames = {"ID Poli", "Dokter", "Nama Poli"};
+        String[] columnNames = {"ID Poli", "Nama Dokter", "Nama Poli"};
         tableModel = new DefaultTableModel(columnNames, 0);
         dokterTable = new JTable(tableModel);
 
         JScrollPane tableScrollPane = new JScrollPane(dokterTable);
+        tableScrollPane.getViewport().setBackground(bgColor); // Table background
         add(tableScrollPane, BorderLayout.CENTER);
 
         // Button Panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.setBackground(bgColor);
 
         JButton tambahButton = new JButton("Tambah");
         JButton editButton = new JButton("Edit");
         JButton simpanButton = new JButton("Simpan");
         JButton hapusButton = new JButton("Hapus");
+        JButton btnBack = new JButton("Back");
 
         tambahButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String idPoli = idPoliField.getText();
                 String namaDokter = namaDokterField.getText();
-                String spesialis = namaPoliField.getText();
+                String namaPoli = namaPoliField.getText();
 
-                if (!idPoli.isEmpty() && !namaDokter.isEmpty() && !spesialis.isEmpty()) {
-                    tableModel.addRow(new Object[]{idPoli, namaDokter, spesialis});
-                    clearFields();
+                if (!idPoli.isEmpty() && !namaDokter.isEmpty() && !namaPoli.isEmpty()) {
+                    try {
+                        String query = "INSERT INTO poli (id_poli, nama_dokter, nama_poli) VALUES (?, ?, ?)";
+                        PreparedStatement statement = connection.prepareStatement(query);
+                        statement.setString(1, idPoli);
+                        statement.setString(2, namaDokter);
+                        statement.setString(3, namaPoli);
+                        statement.executeUpdate();
+
+                        tableModel.addRow(new Object[]{idPoli, namaDokter, namaPoli});
+                        clearFields();
+                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil ditambahkan.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menambahkan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        ex.printStackTrace();
+                    }
                 } else {
                     JOptionPane.showMessageDialog(ManPoli.this, "Semua field harus diisi", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -93,10 +115,28 @@ public class ManPoli extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = dokterTable.getSelectedRow();
                 if (selectedRow != -1) {
-                    tableModel.setValueAt(idPoliField.getText(), selectedRow, 0);
-                    tableModel.setValueAt(namaDokterField.getText(), selectedRow, 1);
-                    tableModel.setValueAt(namaPoliField.getText(), selectedRow, 2);
-                    clearFields();
+                    String idPoli = idPoliField.getText();
+                    String namaDokter = namaDokterField.getText();
+                    String namaPoli = namaPoliField.getText();
+
+                    try {
+                        String query = "UPDATE poli SET nama_dokter = ?, nama_poli = ? WHERE id_poli = ?";
+                        PreparedStatement statement = connection.prepareStatement(query);
+                        statement.setString(1, idPoli);
+                        statement.setString(2, namaDokter);
+                        statement.setString(3, namaPoli);
+                        statement.executeUpdate();
+
+                        tableModel.setValueAt(idPoli, selectedRow, 0);
+                        tableModel.setValueAt(namaDokter, selectedRow, 1);
+                        tableModel.setValueAt(namaPoli, selectedRow, 2);
+
+                        clearFields();
+                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil disimpan.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menyimpan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        ex.printStackTrace();
+                    }
                 } else {
                     JOptionPane.showMessageDialog(ManPoli.this, "Pilih baris yang ingin disimpan", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -108,19 +148,63 @@ public class ManPoli extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = dokterTable.getSelectedRow();
                 if (selectedRow != -1) {
-                    tableModel.removeRow(selectedRow);
+                    String idPoli = tableModel.getValueAt(selectedRow, 0).toString();
+
+                    try {
+                        String query = "DELETE FROM poli WHERE id_poli = ?";
+                        PreparedStatement statement = connection.prepareStatement(query);
+                        statement.setString(1, idPoli);
+                        statement.executeUpdate();
+
+                        tableModel.removeRow(selectedRow);
+                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil dihapus.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menghapus data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        ex.printStackTrace();
+                    }
                 } else {
                     JOptionPane.showMessageDialog(ManPoli.this, "Pilih baris yang ingin dihapus", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
+        btnBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Menutup jendela ManPoli
+                ManPoli.this.dispose();
+
+                // Membuka jendela utama (View)
+                new View().setVisible(true);
+            }
+        });
+
+
         buttonPanel.add(tambahButton);
         buttonPanel.add(editButton);
         buttonPanel.add(simpanButton);
         buttonPanel.add(hapusButton);
+        buttonPanel.add(btnBack);
+
+
+
 
         add(buttonPanel, BorderLayout.SOUTH);
+
+        getContentPane().setBackground(bgColor); // Frame background
+    }
+
+    private void connectToDatabase() {
+        try {
+            String url = "jdbc:mysql://localhost:3308/hos5";
+            String username = "root";
+            String password = "";
+            connection = DriverManager.getConnection(url, username, password);
+            System.out.println("Koneksi ke database berhasil!");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal terhubung ke database: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
 
     private void clearFields() {
@@ -129,15 +213,5 @@ public class ManPoli extends JFrame {
         namaPoliField.setText("");
     }
 
-    private void backToMainMenu() {
-        this.dispose(); // Close the current JadwalPraktikCRUD window
-        new View().setVisible(true); // Open the main menu or previous screen (replace 'View' with the actual class for your main menu)
-    }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ManPoli app = new ManPoli();
-            app.setVisible(true);
-        });
     }
-}

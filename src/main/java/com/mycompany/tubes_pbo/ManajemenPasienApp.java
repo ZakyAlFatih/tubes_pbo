@@ -111,6 +111,8 @@ public class ManajemenPasienApp extends JFrame {
 
             if ("admin".equals(username) && "admin1234".equals(password)) {
                 JOptionPane.showMessageDialog(this, "Admin successfully logged In!");
+                this.dispose(); // Menutup ManajemenPasienApp mod by jak
+                new View().setVisible(true); // Membuka tampilan View
             } else {
                 JOptionPane.showMessageDialog(this, "Username or password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -263,8 +265,7 @@ public class ManajemenPasienApp extends JFrame {
             if (resultSet.next()) {
                 JOptionPane.showMessageDialog(this, "Login Success! Welcome, " + resultSet.getString("nama"));
                 // Setelah login berhasil, buka View dan tutup ManajemenPasienApp mod by jak
-                this.dispose(); // Menutup ManajemenPasienApp
-                new View().setVisible(true); // Membuka tampilan View
+
 
             } else {
                 JOptionPane.showMessageDialog(this, "Email or password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
