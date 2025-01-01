@@ -14,7 +14,7 @@ public class ManajemenPasienApp extends JFrame {
     public ManajemenPasienApp() {
         setTitle("Manajemen Pasien");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300); // Ukuran lebih kecil
+        setSize(800, 600);
         setLocationRelativeTo(null);
         connectToDatabase();
 
@@ -57,7 +57,7 @@ public class ManajemenPasienApp extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JButton btnAdmin = createStyledButton("Admin");
-        JButton btnPasient = createStyledButton("Pasient");
+        JButton btnPasient = createStyledButton("Pasien");
 
         buttonPanel.add(btnAdmin);
         buttonPanel.add(btnPasient);
@@ -249,6 +249,10 @@ public class ManajemenPasienApp extends JFrame {
         }
     }
 
+    //mod by Jak
+    // Class-level declaration of idPasien
+    private int idPasien = -1; // Initialize with -1 or a value indicating no patient is logged in
+
     private void loginPatient(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Email and password must be filled!", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -263,9 +267,13 @@ public class ManajemenPasienApp extends JFrame {
 
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
+                // Get patient ID from the database
+                this.idPasien = resultSet.getInt("id"); // Assuming the column for the ID is named "id"
                 JOptionPane.showMessageDialog(this, "Login Success! Welcome, " + resultSet.getString("nama"));
-                // Setelah login berhasil, buka View dan tutup ManajemenPasienApp mod by jak
 
+                // After login success, open the patient view and close the current app
+                this.dispose();
+                new ViewPasien(idPasien).setVisible(true); // Passing idPasien to the next page
 
             } else {
                 JOptionPane.showMessageDialog(this, "Email or password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -274,6 +282,8 @@ public class ManajemenPasienApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Failed to login: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
     private JPanel createStyledPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));

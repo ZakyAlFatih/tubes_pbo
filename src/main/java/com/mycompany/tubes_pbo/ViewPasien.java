@@ -4,10 +4,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class View extends JFrame {
+public class ViewPasien extends JFrame {
+    private int idPasien;  // Declare idPasien field to hold the patient ID
 
-    public View() {
-        setTitle("Menu Utama");
+    // Constructor now accepts idPasien
+    public ViewPasien(int idPasien) {
+        this.idPasien = idPasien;  // Assign the passed idPasien to the class field
+
+        setTitle("Menu Pasien");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -17,7 +21,7 @@ public class View extends JFrame {
         mainPanel.setBackground(new Color(0xEAF6F6));
 
         // Header dengan desain yang lebih menarik
-        JLabel header = new JLabel("Welcome to HospitalFivee", SwingConstants.CENTER);
+        JLabel header = new JLabel("Welcome to Patient Management", SwingConstants.CENTER);
         header.setFont(new Font("Serif", Font.BOLD, 28));
         header.setForeground(new Color(0x004B6B));
         header.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
@@ -29,40 +33,26 @@ public class View extends JFrame {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Tombol menuju ManDokter
-        JButton btnManDokter = createStyledButton("Manajemen Dokter");
-        btnManDokter.addActionListener(this::goToManDokter);
+        // Tombol menuju Appointment
+        JButton btnAppointment = createStyledButton("Appointment");
+        btnAppointment.addActionListener(this::goToAppointment);
         gbc.gridx = 0;
         gbc.gridy = 0;
-        buttonPanel.add(btnManDokter, gbc);
+        buttonPanel.add(btnAppointment, gbc);
 
-        // Tombol menuju JadwalPraktikCRUD
-        JButton btnJadwalPraktik = createStyledButton("Manajemen Jadwal Praktik");
-        btnJadwalPraktik.addActionListener(this::goToJadwalPraktik);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        buttonPanel.add(btnJadwalPraktik, gbc);
-
-        // Tombol menuju ManPoli
-        JButton btnManPoli = createStyledButton("Manajemen Poli");
-        btnManPoli.addActionListener(this::goToManPoli);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        buttonPanel.add(btnManPoli, gbc);
-
-        // Tombol menuju Medical Report
+        // Tombol menuju MedicalReport
         JButton btnMedicalReport = createStyledButton("Medical Report");
         btnMedicalReport.addActionListener(this::goToMedicalReport);
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 1;
         buttonPanel.add(btnMedicalReport, gbc);
 
-        // Tombol menuju Login awal
-        JButton btnBacktologin = createStyledButton("Back to Login");
-        btnBacktologin.addActionListener(this::goToLogin);
+        // kembali ke login ges
+        JButton btnBack = createStyledButton("Back to Login");
+        btnBack.addActionListener(this::goBackToLogin);
         gbc.gridx = 0;
-        gbc.gridy = 4;
-        buttonPanel.add(btnBacktologin, gbc);
+        gbc.gridy = 2;
+        buttonPanel.add(btnBack, gbc);
 
         // Menambahkan panel tombol ke panel utama
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -92,34 +82,20 @@ public class View extends JFrame {
         return button;
     }
 
-    private void goToManDokter(ActionEvent e) {
-        this.dispose(); // Menutup View
-        new ManDokter().setVisible(true); // Membuka halaman ManDokter
-    }
-
-    private void goToJadwalPraktik(ActionEvent e) {
-        this.dispose(); // Menutup View
-        new JadwalPraktikCRUD().setVisible(true); // Membuka halaman JadwalPraktikCRUD
-    }
-
-    private void goToManPoli(ActionEvent e) {
-        this.dispose(); // Menutup View
-        new ManPoli().setVisible(true); // Membuka halaman ManPoli
+    private void goToAppointment(ActionEvent e) {
+        this.dispose(); // Menutup ViewPasien
+        new Appointment().setVisible(true); // Membuka halaman Appointment
     }
 
     private void goToMedicalReport(ActionEvent e) {
-        this.dispose(); // Menutup View
-        new MedicalReport().setVisible(true); // Membuka halaman ManPoli
+        // Use the class field idPasien instead of hardcoding it
+        new Diagnosa(idPasien).setVisible(true); // Membuka halaman Diagnosa
+        this.dispose(); // Menutup halaman saat ini jika diperlukan
     }
-
-    private void goToLogin(ActionEvent e) {
-        this.dispose(); // Menutup View
+    private void goBackToLogin(ActionEvent e) {
+        this.dispose(); // Menutup ViewPasien
         new ManajemenPasienApp().setVisible(true); // Membuka halaman login
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new View().setVisible(true);
-        });
-    }
+
 }
