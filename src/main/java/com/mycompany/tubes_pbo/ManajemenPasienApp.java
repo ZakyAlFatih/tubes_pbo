@@ -161,58 +161,112 @@ public class ManajemenPasienApp extends JFrame {
         cardLayout.show(cardPanel, "Login");
     }
 
+
+    //mod by jak
     private void showRegisterPage() {
         JPanel registerPanel = createStyledPanel();
+        registerPanel.setLayout(new BorderLayout());
 
-        // Judul
+        // Title
         JLabel titleLabel = createStyledTitle("Register");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(0x004B6B));  // Color for the title
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         registerPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Form Register
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
+        // Form Register (using GridBagLayout for better control over alignment)
+        JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.decode("#cfeef0"));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));  // Add some padding around the form
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);  // Space between components
 
+        // Labels and Text Fields
         JLabel lblEmail = new JLabel("Email:");
-        JTextField tfEmail = new JTextField(15);
+        JTextField tfEmail = new JTextField(20);
         JLabel lblPassword = new JLabel("Password:");
-        JPasswordField pfPassword = new JPasswordField(15);
+        JPasswordField pfPassword = new JPasswordField(20);
         JLabel lblNama = new JLabel("Nama:");
-        JTextField tfNama = new JTextField(15);
+        JTextField tfNama = new JTextField(20);
         JLabel lblUsia = new JLabel("Usia:");
-        JTextField tfUsia = new JTextField(15);
+        JTextField tfUsia = new JTextField(20);
+        JLabel lblJenisKelamin = new JLabel("Jenis Kelamin:");
+        JTextField tfJenisKelamin = new JTextField(20);
         JLabel lblNoTelepon = new JLabel("No Telepon:");
-        JTextField tfNoTelepon = new JTextField(15);
+        JTextField tfNoTelepon = new JTextField(20);
 
+        // Buttons
         JButton btnRegister = createStyledButton("Register");
         JButton btnGoToLogin = createStyledButton("Login");
 
-        formPanel.add(lblEmail);
-        formPanel.add(tfEmail);
-        formPanel.add(lblPassword);
-        formPanel.add(pfPassword);
-        formPanel.add(lblNama);
-        formPanel.add(tfNama);
-        formPanel.add(lblUsia);
-        formPanel.add(tfUsia);
-        formPanel.add(lblNoTelepon);
-        formPanel.add(tfNoTelepon);
-        formPanel.add(btnRegister);
-        formPanel.add(btnGoToLogin);
+// Set both buttons to have the same size
+        Dimension buttonSize = new Dimension(100, 40); // Same width and height for both buttons
+        btnRegister.setPreferredSize(buttonSize);
+        btnGoToLogin.setPreferredSize(buttonSize);
 
+        // Layout the form components
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formPanel.add(lblEmail, gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfEmail, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        formPanel.add(lblPassword, gbc);
+        gbc.gridx = 1;
+        formPanel.add(pfPassword, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formPanel.add(lblNama, gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfNama, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        formPanel.add(lblUsia, gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfUsia, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        formPanel.add(lblJenisKelamin, gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfJenisKelamin, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        formPanel.add(lblNoTelepon, gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfNoTelepon, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(16, 8, 16, 8);  // Add extra space for buttons
+        formPanel.add(btnRegister, gbc);
+
+        gbc.gridy = 7;
+        formPanel.add(btnGoToLogin, gbc);
+
+        // Add formPanel to registerPanel center
         registerPanel.add(formPanel, BorderLayout.CENTER);
 
         // Add Back Button to the top-left corner
         addBackButton(registerPanel);
 
-        // Event Listener
+        // Event Listeners
         btnRegister.addActionListener(e -> registerPatient(tfEmail.getText(), new String(pfPassword.getPassword()), tfNama.getText(),
-                tfUsia.getText(), tfNoTelepon.getText()));
+                tfUsia.getText(), tfJenisKelamin.getText(), tfNoTelepon.getText()));
         btnGoToLogin.addActionListener(e -> showLoginPage());
 
+        // Make sure cardPanel uses CardLayout
+        cardPanel.setLayout(cardLayout);
         cardPanel.add(registerPanel, "Register");
         cardLayout.show(cardPanel, "Register");
     }
+
 
     private void addBackButton(JPanel panel) {
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -226,20 +280,21 @@ public class ManajemenPasienApp extends JFrame {
         panel.add(topPanel, BorderLayout.NORTH);
     }
 
-    private void registerPatient(String email, String password, String nama, String usia, String noTelepon) {
-        if (email.isEmpty() || password.isEmpty() || nama.isEmpty() || usia.isEmpty() || noTelepon.isEmpty()) {
+    private void registerPatient(String email, String password, String nama, String usia,String jenis_kelamin, String noTelepon) {
+        if (email.isEmpty() || password.isEmpty() || nama.isEmpty() || usia.isEmpty() || jenis_kelamin.isEmpty()|| noTelepon.isEmpty()) {
             JOptionPane.showMessageDialog(this, "All fields must be filled!", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            String sql = "INSERT INTO pasien (email, password, nama, usia, no_telepon) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO pasien (email, password, nama, usia,jenis_kelamin, no_telepon) VALUES (?, ?, ?,?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, email);
             statement.setString(2, password);
             statement.setString(3, nama);
             statement.setInt(4, Integer.parseInt(usia));
-            statement.setString(5, noTelepon);
+            statement.setString(5, jenis_kelamin);
+            statement.setString(6, noTelepon);
 
             statement.executeUpdate();
             JOptionPane.showMessageDialog(this, "Successfully registered!");
