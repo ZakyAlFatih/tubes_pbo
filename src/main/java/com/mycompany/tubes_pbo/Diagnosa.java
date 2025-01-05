@@ -95,6 +95,8 @@ public class Diagnosa extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data diagnosa: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+
+
     }
 
     private void goBack(ActionEvent e) {

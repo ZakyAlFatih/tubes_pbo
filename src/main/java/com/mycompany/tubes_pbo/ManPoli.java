@@ -8,10 +8,11 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class ManPoli extends JFrame {
+
+    private DefaultTableModel tableModel;
     private JTextField idPoliField;
     private JTextField namaDokterField;
     private JTextField namaPoliField;
-    private DefaultTableModel tableModel;
     private JTable dokterTable;
     private Connection connection;
 
@@ -67,118 +68,11 @@ public class ManPoli extends JFrame {
         JButton hapusButton = new JButton("Hapus");
         JButton btnBack = new JButton("Back");
 
-        tambahButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String idPoli = idPoliField.getText();
-                String namaDokter = namaDokterField.getText();
-                String namaPoli = namaPoliField.getText();
-
-                if (!idPoli.isEmpty() && !namaDokter.isEmpty() && !namaPoli.isEmpty()) {
-                    try {
-                        String query = "INSERT INTO poli (id_poli, nama_dokter, nama_poli) VALUES (?, ?, ?)";
-                        PreparedStatement statement = connection.prepareStatement(query);
-                        statement.setString(1, idPoli);
-                        statement.setString(2, namaDokter);
-                        statement.setString(3, namaPoli);
-                        statement.executeUpdate();
-
-                        tableModel.addRow(new Object[]{idPoli, namaDokter, namaPoli});
-                        clearFields();
-                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil ditambahkan.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menambahkan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                        ex.printStackTrace();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(ManPoli.this, "Semua field harus diisi", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = dokterTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    idPoliField.setText(tableModel.getValueAt(selectedRow, 0).toString());
-                    namaDokterField.setText(tableModel.getValueAt(selectedRow, 1).toString());
-                    namaPoliField.setText(tableModel.getValueAt(selectedRow, 2).toString());
-                } else {
-                    JOptionPane.showMessageDialog(ManPoli.this, "Pilih baris yang ingin diedit", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        simpanButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = dokterTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    String idPoli = idPoliField.getText();
-                    String namaDokter = namaDokterField.getText();
-                    String namaPoli = namaPoliField.getText();
-
-                    try {
-                        String query = "UPDATE poli SET nama_dokter = ?, nama_poli = ? WHERE id_poli = ?";
-                        PreparedStatement statement = connection.prepareStatement(query);
-                        statement.setString(1, idPoli);
-                        statement.setString(2, namaDokter);
-                        statement.setString(3, namaPoli);
-                        statement.executeUpdate();
-
-                        tableModel.setValueAt(idPoli, selectedRow, 0);
-                        tableModel.setValueAt(namaDokter, selectedRow, 1);
-                        tableModel.setValueAt(namaPoli, selectedRow, 2);
-
-                        clearFields();
-                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil disimpan.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menyimpan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                        ex.printStackTrace();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(ManPoli.this, "Pilih baris yang ingin disimpan", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        hapusButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = dokterTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    String idPoli = tableModel.getValueAt(selectedRow, 0).toString();
-
-                    try {
-                        String query = "DELETE FROM poli WHERE id_poli = ?";
-                        PreparedStatement statement = connection.prepareStatement(query);
-                        statement.setString(1, idPoli);
-                        statement.executeUpdate();
-
-                        tableModel.removeRow(selectedRow);
-                        JOptionPane.showMessageDialog(ManPoli.this, "Data berhasil dihapus.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(ManPoli.this, "Gagal menghapus data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                        ex.printStackTrace();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(ManPoli.this, "Pilih baris yang ingin dihapus", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        btnBack.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Menutup jendela ManPoli
-                ManPoli.this.dispose();
-
-                // Membuka jendela utama (View)
-                new View().setVisible(true);
-            }
-        });
-
+        tambahButton.addActionListener(e -> tambahData());
+        editButton.addActionListener(e -> editData());
+        simpanButton.addActionListener(e -> simpanData());
+        hapusButton.addActionListener(e -> hapusData());
+        btnBack.addActionListener(e -> kembaliKeHalamanUtama());
 
         buttonPanel.add(tambahButton);
         buttonPanel.add(editButton);
@@ -186,12 +80,12 @@ public class ManPoli extends JFrame {
         buttonPanel.add(hapusButton);
         buttonPanel.add(btnBack);
 
-
-
-
         add(buttonPanel, BorderLayout.SOUTH);
 
         getContentPane().setBackground(bgColor); // Frame background
+
+        // Load data saat aplikasi pertama kali dijalankan
+        loadTableData();
     }
 
     private void connectToDatabase() {
@@ -207,11 +101,123 @@ public class ManPoli extends JFrame {
         }
     }
 
+    private void loadTableData() {
+        try {
+            tableModel.setRowCount(0); // Bersihkan tabel sebelum memuat data baru
+            String query = "SELECT * FROM poli";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+
+            while (resultSet.next()) {
+                String idPoli = resultSet.getString("id_poli");
+                String namaDokter = resultSet.getString("nama_dokter");
+                String namaPoli = resultSet.getString("nama_poli");
+                tableModel.addRow(new Object[]{idPoli, namaDokter, namaPoli});
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void tambahData() {
+        String idPoli = idPoliField.getText();
+        String namaDokter = namaDokterField.getText();
+        String namaPoli = namaPoliField.getText();
+
+        if (!idPoli.isEmpty() && !namaDokter.isEmpty() && !namaPoli.isEmpty()) {
+            try {
+                String query = "INSERT INTO poli (id_poli, nama_dokter, nama_poli) VALUES (?, ?, ?)";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, idPoli);
+                statement.setString(2, namaDokter);
+                statement.setString(3, namaPoli);
+                statement.executeUpdate();
+
+                loadTableData(); // Refresh tabel setelah menambahkan data
+                clearFields();
+                JOptionPane.showMessageDialog(this, "Data berhasil ditambahkan.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Gagal menambahkan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Semua field harus diisi", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void editData() {
+        int selectedRow = dokterTable.getSelectedRow();
+        if (selectedRow != -1) {
+            idPoliField.setText(tableModel.getValueAt(selectedRow, 0).toString());
+            namaDokterField.setText(tableModel.getValueAt(selectedRow, 1).toString());
+            namaPoliField.setText(tableModel.getValueAt(selectedRow, 2).toString());
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih baris yang ingin diedit", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void simpanData() {
+        int selectedRow = dokterTable.getSelectedRow();
+        if (selectedRow != -1) {
+            String idPoli = idPoliField.getText();
+            String namaDokter = namaDokterField.getText();
+            String namaPoli = namaPoliField.getText();
+
+            try {
+                String query = "UPDATE poli SET nama_dokter = ?, nama_poli = ? WHERE id_poli = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, namaDokter);
+                statement.setString(2, namaPoli);
+                statement.setString(3, idPoli);
+                statement.executeUpdate();
+
+                loadTableData(); // Refresh tabel setelah menyimpan data
+                clearFields();
+                JOptionPane.showMessageDialog(this, "Data berhasil disimpan.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih baris yang ingin disimpan", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void hapusData() {
+        int selectedRow = dokterTable.getSelectedRow();
+        if (selectedRow != -1) {
+            String idPoli = tableModel.getValueAt(selectedRow, 0).toString();
+
+            try {
+                String query = "DELETE FROM poli WHERE id_poli = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, idPoli);
+                statement.executeUpdate();
+
+                loadTableData(); // Refresh tabel setelah menghapus data
+                JOptionPane.showMessageDialog(this, "Data berhasil dihapus.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Gagal menghapus data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih baris yang ingin dihapus", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void kembaliKeHalamanUtama() {
+        this.dispose();
+        new View().setVisible(true); // Buka jendela utama
+    }
+
     private void clearFields() {
         idPoliField.setText("");
         namaDokterField.setText("");
         namaPoliField.setText("");
     }
 
-
+    public DefaultTableModel getTableModel() {
+        return tableModel;
     }
+}

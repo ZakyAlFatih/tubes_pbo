@@ -43,13 +43,19 @@ public class ManajemenPasienApp extends JFrame {
         JPanel dashboardPanel = createStyledPanel();
 
         // Judul
-        JLabel titleLabel = createStyledTitle("Welcome to HospitalFivee");
+        JLabel titleLabel = new JLabel("Welcome to HospitalFivee", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(0x004B6B));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         dashboardPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Teks "Login as ..."
+       // Teks "Login as ..."
         JLabel loginAsLabel = new JLabel("Login as ...", SwingConstants.CENTER);
-        loginAsLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        loginAsLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        loginAsLabel.setForeground(new Color(0x004B6B)); // Sesuaikan warna dengan tema
+        loginAsLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // Menambahkan padding seragam
         dashboardPanel.add(loginAsLabel, BorderLayout.CENTER);
+
 
         // Tombol Pilihan
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 10, 10));

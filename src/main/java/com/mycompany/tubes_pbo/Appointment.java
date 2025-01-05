@@ -14,8 +14,10 @@ public class Appointment extends JFrame {
     private JTable appointmentTable;
     private DefaultTableModel tableModel;
     private Connection connection;
+    private int idPasien;
 
     public Appointment() {
+        this.idPasien = idPasien;
         // Koneksi ke Database
         connectToDatabase();
 
@@ -208,11 +210,9 @@ public class Appointment extends JFrame {
 
    private void kembaliKeMenuUtama() {
     this.dispose();
-       new View().setVisible(true);
+       new ViewPasien(idPasien).setVisible(true);
    }
 
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> new Appointment().setVisible(true));
-//    }
+
 }
 
