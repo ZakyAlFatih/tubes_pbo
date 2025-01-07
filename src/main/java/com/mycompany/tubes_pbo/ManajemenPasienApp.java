@@ -49,7 +49,7 @@ public class ManajemenPasienApp extends JFrame {
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         dashboardPanel.add(titleLabel, BorderLayout.NORTH);
 
-       // Teks "Login as ..."
+        // Teks "Login as ..."
         JLabel loginAsLabel = new JLabel("Login as ...", SwingConstants.CENTER);
         loginAsLabel.setFont(new Font("Arial", Font.BOLD, 16));
         loginAsLabel.setForeground(new Color(0x004B6B)); // Sesuaikan warna dengan tema
@@ -364,6 +364,53 @@ public class ManajemenPasienApp extends JFrame {
         button.setForeground(Color.WHITE);
         button.setFont(new Font("Arial", Font.PLAIN, 14));
         return button;
+    }
+
+
+    private Pasien pasien;
+
+    private class Pasien extends Person {
+
+        private int idPasien;
+        private String noTelepon;
+        private int usia;
+        private String jenisKelamin;
+
+        public Pasien(int idPasien, String nama, String email, String noTelepon, int usia, String jenisKelamin) {
+            super(nama, email);
+            this.idPasien = idPasien;
+            this.noTelepon = noTelepon;
+            this.usia = usia;
+            this.jenisKelamin = jenisKelamin;
+        }
+
+        public int getIdPasien() {
+            return idPasien;
+        }
+
+        public String getNoTelepon() {
+            return noTelepon;
+        }
+
+        public int getUsia() {
+            return usia;
+        }
+
+        public String getJenisKelamin() {
+            return jenisKelamin;
+        }
+
+        public void setNoTelepon(String noTelepon) {
+            this.noTelepon = noTelepon;
+        }
+
+        public void setUsia(int usia) {
+            this.usia = usia;
+        }
+
+        public void setJenisKelamin(String jenisKelamin) {
+            this.jenisKelamin = jenisKelamin;
+        }
     }
 
     public static void main(String[] args) {
